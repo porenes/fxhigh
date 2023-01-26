@@ -30,8 +30,8 @@ const argv = require("yargs")
     }
   )
   .default({
-    width: 800,
-    height: 800,
+    width: 9999,
+    height: 9999,
     timeout: 120,
   })
   .help()
@@ -61,12 +61,10 @@ const saveFrame = async (page, filename) => {
 const waitPreview = (triggerMode, page, delay) =>
   new Promise(async (resolve) => {
     let resolved = false;
-    console.log("Entering waitPreview");
     if (triggerMode === "DELAY") {
       await sleep(delay);
       resolve();
     } else if (triggerMode === "FN_TRIGGER") {
-      console.log("Trigger mode");
       Promise.race([
         // add event listener and wait for event to fire before returning
         page.evaluate(function () {
@@ -151,6 +149,7 @@ const url =
 
   for (let i = 0; i < collection.length; i++) {
     const g = collection[i];
+    console.log("📸 Capturing " + g.f);
 
     const url = g.url;
     // try to reach the page
