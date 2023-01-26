@@ -173,6 +173,6 @@ const url =
 
     await waitPreview("FN_TRIGGER", page, 300);
     // await waitPreview("DELAY", page, 300);
-    await saveFrame(page, g.f);
+    await saveFrame(page, "./output/" + g.f);
   }
 })();
