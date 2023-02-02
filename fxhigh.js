@@ -23,8 +23,8 @@ const argv = require("yargs")
     "$0 [options] <gentk>",
     "Captures high res versions for a specific gentk.",
     (yargs) => {
-      yargs.positional("count", {
-        describe: "Number of images to capture",
+      yargs.positional("gentk", {
+        describe: "Generator to capture",
         type: "number",
       });
     }
@@ -33,6 +33,7 @@ const argv = require("yargs")
     width: 9999,
     height: 9999,
     timeout: 120,
+    id: 0,
   })
   .help()
   .version(false)
@@ -82,6 +83,7 @@ const waitPreview = (triggerMode, page, delay) =>
   });
 
 const getCollectionUrls = async (gentk) => {
+  //TODO use another query if single token
   const query = gql`
     query ExampleQuery($generativeTokenId: Float) {
       generativeToken(id: $generativeTokenId) {
@@ -89,6 +91,7 @@ const getCollectionUrls = async (gentk) => {
         entireCollection {
           slug
           generationHash
+          iteration
         }
       }
     }
@@ -113,6 +116,7 @@ const getCollectionUrls = async (gentk) => {
     collection.push({
       f: i.slug + ".png",
       url: genURL + "/?fxhash=" + i.generationHash + "&preview=1",
+      iteration: i.iteration,
     });
   });
   return collection;
@@ -147,8 +151,19 @@ const url =
   //get list of urls
   const collection = await getCollectionUrls(argv.gentk);
 
-  for (let i = 0; i < collection.length; i++) {
-    const g = collection[i];
+  if (argv.id && argv.id !== 0) {
+    const g = collection.find((it) => it.iteration == argv.id);
+    if (g) {
+      await extractIteration(g);
+    } else console.log("Iteration not found");
+  } else {
+    for (let i = 0; i < collection.length; i++) {
+      const g = collection[i];
+      await extractIteration(g);
+    }
+  }
+
+  async function extractIteration(g) {
     console.log("📸 Capturing " + g.f);
 
     const url = g.url;
